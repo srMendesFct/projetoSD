@@ -1,7 +1,9 @@
 package microgram.impl.clt.rest;
 
 import java.net.URI;
+import java.util.List;
 
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -29,5 +31,28 @@ public abstract class _TODO_RestProfilesClient extends RestClient implements Pro
 		return super.responseContents(r, Status.OK, new GenericType<Profile>() {});
 	}
 	
+	public Result<Void> createProfile(Profile profile){
+		
+		Response r = target.path(profile.getUserId()).request()
+				.accept(MediaType.APPLICATION_JSON).post(Entity.entity(profile, MediaType.APPLICATION_JSON));
+		
+		if(r.getStatusInfo() == Status.OK) {
+			return super.responseContents(r, Status.OK, new GenericType<Void>() {});
+		}else {
+			return super.responseContents(r, Status.CONFLICT, new GenericType<Void>() {});
+		}
+	}
+	
+	public Result<List<Profile>> search(String prefix){
+		
+		Response r = target.request().accept(MediaType.APPLICATION_JSON).get();
+		
+		return super.responseContents(r, Status.OK, new GenericType<List<Profile>>() {});
+		
+	}
+	
+	Result<Void> follow(String userId1, String userId2, boolean isFollowing){
+		Response r = target.request().accept(MediaType.APPLICATION_JSON).post(Entity.entity(, MediaType.APPLICATION_JSON_TYPE))
+				}
 	
 }
