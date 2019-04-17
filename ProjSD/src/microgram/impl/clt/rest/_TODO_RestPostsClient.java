@@ -20,12 +20,28 @@ public abstract class _TODO_RestPostsClient extends RestClient implements Posts 
 		super(serverUri, RestPosts.PATH);
 	}
 
-	
 	public Result<String> createPost(Post post) {
-		Response r = target
-				.request()
-				.post( Entity.entity( post, MediaType.APPLICATION_JSON));
-		
-		return super.responseContents(r, Status.OK, new GenericType<String>(){});	
+		Response r = target.request().post(Entity.entity(post, MediaType.APPLICATION_JSON));
+
+		return super.responseContents(r, Status.OK, new GenericType<String>() {
+		});
 	}
+
+	public Result<Post> getPost(String postId) {
+		Response r = target.path(postId).request().accept(MediaType.APPLICATION_JSON).get();
+
+		if (r.getStatusInfo() == Status.OK) {
+			return super.responseContents(r, Status.OK, new GenericType<Post>() {
+			});
+		} else {
+			return super.responseContents(r, Status.NOT_FOUND, new GenericType<Post>() {
+			});
+		}
+
+	}
+	
+	
+	
+	
+	
 }

@@ -23,36 +23,59 @@ public abstract class _TODO_RestProfilesClient extends RestClient implements Pro
 
 	@Override
 	public Result<Profile> getProfile(String userId) {
-		Response r = target.path(userId)
-				.request()
-				.accept(MediaType.APPLICATION_JSON)
-				.get();
-		
-		return super.responseContents(r, Status.OK, new GenericType<Profile>() {});
+		Response r = target.path(userId).request().accept(MediaType.APPLICATION_JSON).get();
+
+		return super.responseContents(r, Status.OK, new GenericType<Profile>() {
+		});
 	}
-	
-	public Result<Void> createProfile(Profile profile){
-		
-		Response r = target.path(profile.getUserId()).request()
-				.accept(MediaType.APPLICATION_JSON).post(Entity.entity(profile, MediaType.APPLICATION_JSON));
-		
-		if(r.getStatusInfo() == Status.OK) {
-			return super.responseContents(r, Status.OK, new GenericType<Void>() {});
-		}else {
-			return super.responseContents(r, Status.CONFLICT, new GenericType<Void>() {});
+
+	public Result<Void> createProfile(Profile profile) {
+
+		Response r = target.path(profile.getUserId()).request().accept(MediaType.APPLICATION_JSON)
+				.post(Entity.entity(profile, MediaType.APPLICATION_JSON));
+
+		if (r.getStatusInfo() == Status.OK) {
+			return super.responseContents(r, Status.OK, new GenericType<Void>() {
+			});
+		} else {
+			return super.responseContents(r, Status.CONFLICT, new GenericType<Void>() {
+			});
 		}
 	}
-	
-	public Result<List<Profile>> search(String prefix){
-		
-		Response r = target.request().accept(MediaType.APPLICATION_JSON).get();
-		
-		return super.responseContents(r, Status.OK, new GenericType<List<Profile>>() {});
-		
+
+	public Result<List<Profile>> search(String prefix) {
+
+		Response r = target.queryParam("name", prefix).request().accept(MediaType.APPLICATION_JSON).get();
+
+		return super.responseContents(r, Status.OK, new GenericType<List<Profile>>() {
+		});
+
 	}
-	
-	Result<Void> follow(String userId1, String userId2, boolean isFollowing){
-		Response r = target.request().accept(MediaType.APPLICATION_JSON).post(Entity.entity(, MediaType.APPLICATION_JSON_TYPE))
-				}
-	
+
+	public Result<Void> follow(String userId1, String userId2, boolean isFollowing) {
+		Response r = target.path(userId1 + "/following/" + userId2).request().accept(MediaType.APPLICATION_JSON)
+				.put(Entity.entity(isFollowing, MediaType.APPLICATION_JSON));
+
+		if (r.getStatusInfo() == Status.OK) {
+			return super.responseContents(r, Status.OK, new GenericType<Void>() {
+			});
+		} else {
+			return super.responseContents(r, Status.NOT_FOUND, new GenericType<Void>() {
+			});
+		}
+
+	}
+
+	public Result<Boolean> isFollowing(String userId1, String userId2) {
+		Response r = target.path(userId1 + "/following/" + userId2).request().accept(MediaType.APPLICATION_JSON).get();
+
+		if (r.getStatusInfo() == Status.OK) {
+			return super.responseContents(r, Status.OK, new GenericType<Boolean>() {
+			});
+		} else {
+			return super.responseContents(r, Status.NOT_FOUND, new GenericType<Boolean>() {
+			});
+		}
+	}
+
 }
