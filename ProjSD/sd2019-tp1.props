@@ -1,3 +1,15 @@
+posts-rest-service-mainclass= posts-rest-service-port=7771
+
+profiles-rest-service-mainclass= profiles-rest-service-port=7777
+
+mediastorage-rest-service-mainclass= mediastorage-rest-service-port=
+
+posts-soap-service-mainclass= posts-soap-service-port=
+
+profiles-soap-service-mainclass= profiles-soap-service-port=
 
 discovery-multicast-address=226.226.226.226:2266
 
+discovery-finduris-timeout=
+
+uses-kafka-bool=
