@@ -15,9 +15,9 @@ import microgram.api.java.Result;
 import microgram.api.rest.RestProfiles;
 
 //TODO Make this class concrete
-public abstract class _TODO_RestProfilesClient extends RestClient implements Profiles {
+public abstract class RestProfilesClient extends RestClient implements Profiles {
 
-	public _TODO_RestProfilesClient(URI serverUri) {
+	public RestProfilesClient(URI serverUri) {
 		super(serverUri, RestProfiles.PATH);
 	}
 
@@ -34,13 +34,8 @@ public abstract class _TODO_RestProfilesClient extends RestClient implements Pro
 		Response r = target.path(profile.getUserId()).request().accept(MediaType.APPLICATION_JSON)
 				.post(Entity.entity(profile, MediaType.APPLICATION_JSON));
 
-		if (r.getStatusInfo() == Status.OK) {
-			return super.responseContents(r, Status.OK, new GenericType<Void>() {
-			});
-		} else {
-			return super.responseContents(r, Status.CONFLICT, new GenericType<Void>() {
-			});
-		}
+		return super.responseContents(r, Status.OK, new GenericType<Void>() {
+		});
 	}
 
 	public Result<List<Profile>> search(String prefix) {
@@ -56,26 +51,16 @@ public abstract class _TODO_RestProfilesClient extends RestClient implements Pro
 		Response r = target.path(userId1 + "/following/" + userId2).request().accept(MediaType.APPLICATION_JSON)
 				.put(Entity.entity(isFollowing, MediaType.APPLICATION_JSON));
 
-		if (r.getStatusInfo() == Status.OK) {
-			return super.responseContents(r, Status.OK, new GenericType<Void>() {
-			});
-		} else {
-			return super.responseContents(r, Status.NOT_FOUND, new GenericType<Void>() {
-			});
-		}
+		return super.responseContents(r, Status.OK, new GenericType<Void>() {
+		});
 
 	}
 
 	public Result<Boolean> isFollowing(String userId1, String userId2) {
 		Response r = target.path(userId1 + "/following/" + userId2).request().accept(MediaType.APPLICATION_JSON).get();
 
-		if (r.getStatusInfo() == Status.OK) {
-			return super.responseContents(r, Status.OK, new GenericType<Boolean>() {
-			});
-		} else {
-			return super.responseContents(r, Status.NOT_FOUND, new GenericType<Boolean>() {
-			});
-		}
+		return super.responseContents(r, Status.OK, new GenericType<Boolean>() {
+		});
 	}
 
 }

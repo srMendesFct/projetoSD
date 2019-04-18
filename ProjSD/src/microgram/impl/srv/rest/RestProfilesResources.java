@@ -9,11 +9,11 @@ import microgram.api.rest.RestProfiles;
 import microgram.impl.srv.java.JavaProfiles;
 
 //Make this class concrete.
-public abstract class _TODO_RestProfilesResources extends RestResource implements RestProfiles {
+public abstract class RestProfilesResources extends RestResource implements RestProfiles {
 
 	final Profiles impl;
 
-	public _TODO_RestProfilesResources(URI serverUri) {
+	public RestProfilesResources(URI serverUri) {
 		this.impl = new JavaProfiles();
 	}
 
