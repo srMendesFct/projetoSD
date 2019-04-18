@@ -32,7 +32,8 @@ public class ProfilesRestServer {
 		
 		ResourceConfig config = new ResourceConfig();
 
-//		config.register(new _TODO_RestProfilesResources(serverURI)); TODO
+		config.register(new RestProfilesResources(URI.create(serverURI.replace(ip, "0.0.0.0"))) {
+		});
 		
 		JdkHttpServerFactory.createHttpServer( URI.create(serverURI.replace(ip, "0.0.0.0")), config);
 
