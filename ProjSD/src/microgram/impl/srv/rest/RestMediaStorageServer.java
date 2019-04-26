@@ -19,7 +19,7 @@ public class RestMediaStorageServer {
 	
 	public static final int PORT = 9999;
 	public static final String SERVICE = "Microgram-MediaStorage";
-	public static String SERVER_BASE_URI = "http://%s:%s/rest/media";
+	public static String SERVER_BASE_URI = "http://%s:%s/rest/media/";
 	
 	public static void main(String[] args) throws Exception {
 

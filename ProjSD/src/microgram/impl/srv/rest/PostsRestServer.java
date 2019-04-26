@@ -1,6 +1,8 @@
 package microgram.impl.srv.rest;
 
 import java.net.URI;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,13 +28,19 @@ public class PostsRestServer {
 	public static void main(String[] args) throws Exception {
 
 		Log.setLevel( Level.FINER );
+		ExecutorService pool = Executors.newFixedThreadPool(15);
 
 		String ip = IP.hostAddress();
 		String serverURI = String.format(SERVER_BASE_URI, ip, PORT);
 		
 		ResourceConfig config = new ResourceConfig();
+		
+		pool.execute(new Thread( () -> {
+			config.register(new RestPostsResources(URI.create(serverURI.replace(ip, "0.0.0.0"))) {
 
-//		config.register(new _TODO_RestPostsResources(serverURI)); TODO
+			});
+		}));
+	
 		
 		JdkHttpServerFactory.createHttpServer( URI.create(serverURI.replace(ip, "0.0.0.0")), config);
 

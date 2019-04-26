@@ -28,7 +28,7 @@ public class RestMediaResources implements RestMediaStorage {
 	public String upload(byte[] bytes) {
 		try {
 			String id = Hash.of(bytes);// Compute an quasi-unique hash of the contents of the data and use it as its
-										// id/filename
+					System.out.println("i did this");					// id/filename
 			File filename = new File(ROOT_DIR + id + MEDIA_EXTENSION);
 			if (filename.exists())
 				throw new WebApplicationException(Status.CONFLICT);
@@ -43,7 +43,7 @@ public class RestMediaResources implements RestMediaStorage {
 
 	@Override
 	public byte[] download(String id) {
-		Log.info("download request for: id");
+		Log.info("download request for: " + id);
 
 		File filename = new File(ROOT_DIR + id + MEDIA_EXTENSION);
 		if (filename.exists()) {

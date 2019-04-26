@@ -4,8 +4,11 @@ import static microgram.api.java.Result.error;
 import static microgram.api.java.Result.ok;
 import static microgram.api.java.Result.ErrorCode.CONFLICT;
 import static microgram.api.java.Result.ErrorCode.NOT_FOUND;
-import static microgram.api.java.Result.ErrorCode.NOT_IMPLEMENTED;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,7 +20,6 @@ import java.util.Set;
 import microgram.api.Post;
 import microgram.api.java.Posts;
 import microgram.api.java.Result;
-import microgram.api.java.Result.ErrorCode;
 import utils.Hash;
 
 public class JavaPosts implements Posts {
@@ -37,7 +39,14 @@ public class JavaPosts implements Posts {
 
 	@Override
 	public Result<Void> deletePost(String postId) {
-		return Result.error(ErrorCode.NOT_IMPLEMENTED);
+		Post post = posts.get(postId);
+		if (post != null) {
+			likes.remove(postId);
+			userPosts.get(post.getOwnerId()).remove(postId);
+			posts.remove(postId);
+			return ok();
+		} else
+			return error(NOT_FOUND);
 	}
 
 	@Override
@@ -96,6 +105,39 @@ public class JavaPosts implements Posts {
 
 	@Override
 	public Result<List<String>> getFeed(String userId) {
-		return error(NOT_IMPLEMENTED);
+
+		List<String> l = new ArrayList<String>();
+		FileInputStream fileIn;
+		try {
+			fileIn = new FileInputStream("JavaProfiles.ser");
+			ObjectInputStream in = new ObjectInputStream(fileIn);
+			JavaProfiles jp = (JavaProfiles) in.readObject();
+			Set<String> followers = jp.following.get(userId);
+
+			if (followers == null) {
+				in.close();
+				return error(NOT_FOUND);
+			}
+			for (String key : posts.keySet()) {
+				if (followers.contains(key)) {
+					l.add(key);
+				}
+
+			}
+			in.close();
+			return ok(l);
+
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+
 	}
 }

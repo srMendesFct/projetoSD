@@ -2,7 +2,7 @@ posts-rest-service-mainclass= posts-rest-service-port=7771
 
 profiles-rest-service-mainclass= profiles-rest-service-port=7777
 
-mediastorage-rest-service-mainclass= mediastorage-rest-service-port=
+mediastorage-rest-service-mainclass= mediastorage-rest-service-port=9999
 
 posts-soap-service-mainclass= posts-soap-service-port=
 

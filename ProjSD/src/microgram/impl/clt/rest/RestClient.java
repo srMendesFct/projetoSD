@@ -3,6 +3,7 @@ package microgram.impl.clt.rest;
 import static microgram.api.java.Result.error;
 import static microgram.api.java.Result.ok;
 
+import java.io.IOException;
 import java.net.URI;
 
 import javax.ws.rs.client.Client;
@@ -14,7 +15,9 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Response.StatusType;
 
 import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.ClientProperties;
 
+import discovery.Discovery;
 import microgram.api.java.Result;
 import microgram.api.java.Result.ErrorCode;
 import microgram.impl.clt.java.RetryClient;
@@ -30,10 +33,18 @@ abstract class RestClient extends RetryClient {
 	protected final ClientConfig config;
 
 	public RestClient(URI uri, String path) {
+		try {
+			Discovery.findUrisOf(uri.toString(), 1);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		this.uri = uri;
 		this.config = new ClientConfig();
 		this.client = ClientBuilder.newClient(config);
 		this.target = this.client.target(uri).path(path);
+		config.property(ClientProperties.CONNECT_TIMEOUT, CONNECT_TIMEOUT);
+		config.property(ClientProperties.READ_TIMEOUT, READ_TIMEOUT);
 	}
 
 	// Get the actual response, when the status matches what was expected, otherwise
