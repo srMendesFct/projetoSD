@@ -24,6 +24,7 @@ public class DownloadMediaClient {
 		Client client = ClientBuilder.newClient(config);
 
 		WebTarget target = client.target(serverUrl).path(RestMediaResources.PATH);
+		System.out.println(target);
 		
 		
 		Response r = target.path("84486F586FA514F31F07057F39B68C673B7A091F")

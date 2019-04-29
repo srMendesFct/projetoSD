@@ -20,7 +20,7 @@ public class RestMediaResources implements RestMediaStorage {
 	final String baseUri;
 
 	public RestMediaResources(String baseUri) {
-		this.baseUri = baseUri + RestMediaStorage.PATH;
+		this.baseUri = baseUri;
 		new File(ROOT_DIR).mkdirs();
 	}
 
@@ -30,11 +30,14 @@ public class RestMediaResources implements RestMediaStorage {
 			String id = Hash.of(bytes);// Compute an quasi-unique hash of the contents of the data and use it as its
 					System.out.println("i did this");					// id/filename
 			File filename = new File(ROOT_DIR + id + MEDIA_EXTENSION);
+			System.out.println(filename);
 			if (filename.exists())
 				throw new WebApplicationException(Status.CONFLICT);
 
 			Files.write(filename.toPath(), bytes);
-			return baseUri + "/" + id;
+			System.out.println(baseUri);
+			System.out.println(id);
+			return baseUri + id;
 		} catch (IOException x) {
 			x.printStackTrace();
 			throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);

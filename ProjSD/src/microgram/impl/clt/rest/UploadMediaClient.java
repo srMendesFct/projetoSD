@@ -29,7 +29,7 @@ public class UploadMediaClient {
 		Client client = ClientBuilder.newClient(config);
 		
 		WebTarget target = client.target( serverUrl ).path( RestMediaResources.PATH );
-		
+		System.out.println(target);
 		Response r = target.request()
 				.accept(MediaType.APPLICATION_JSON)
 				.post(Entity.entity(bytes, MediaType.APPLICATION_OCTET_STREAM));
