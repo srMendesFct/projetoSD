@@ -115,12 +115,18 @@ public class JavaPosts implements Posts {
 			RestProfilesClient c = new RestProfilesClient(servers[0]) {
 			};
 
-			for (String id : userPosts.keySet()) {
-				Result<Boolean> response = c.isFollowing(userId, id);
-				if (response.value()) {
-					for (String postid : userPosts.get(id)) {
-						l.add(postid);
+			if (!c.getProfile(userId).isOK()) {
+				return error(NOT_FOUND);
+			} else {
+
+				for (String id : userPosts.keySet()) {
+					Result<Boolean> response = c.isFollowing(userId, id);
+					if (response.value()) {
+						for (String postid : userPosts.get(id)) {
+							l.add(postid);
+						}
 					}
+
 				}
 
 			}
@@ -129,7 +135,7 @@ public class JavaPosts implements Posts {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return null;
+		return ok(l);
 
 	}
 }
