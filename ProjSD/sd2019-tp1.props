@@ -1,10 +1,10 @@
 posts-rest-service-mainclass= microgram.impl.srv.rest.PostsRestServer
 posts-rest-service-port=7771
 
-profiles-rest-service-mainclass= microgram.impl.srv.rest.ProfileRestServer
+profiles-rest-service-mainclass= microgram.impl.srv.rest.ProfilesRestServer
 profiles-rest-service-port=7777
 
-mediastorage-rest-service-mainclass= microgram.impl.srv.RestMediaStorageServer
+mediastorage-rest-service-mainclass= microgram.impl.srv.rest.RestMediaStorageServer
 mediastorage-rest-service-port=9999
 
 posts-soap-service-mainclass= microgram.impl.srv.PostsWebService
