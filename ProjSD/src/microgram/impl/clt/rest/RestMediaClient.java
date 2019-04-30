@@ -15,7 +15,7 @@ import utils.Hash;
 
 public class RestMediaClient extends RestClient implements Media {
 
-	public RestMediaClient(URI uri, String path) {
+	public RestMediaClient(URI uri) {
 		super(uri, RestMediaStorage.PATH);
 	}
 

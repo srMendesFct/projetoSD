@@ -1,5 +1,7 @@
 package microgram.impl.srv.java;
 
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,6 +36,20 @@ public class JavaMedia extends RestResource implements microgram.api.java.Media,
 			return ok(res);
 		else
 			return error(NOT_FOUND);
+	}
+	
+	public void save() {
+		try {
+			FileOutputStream fileOut = new FileOutputStream("/tmp/JavaMedia.ser");
+			ObjectOutputStream out = new ObjectOutputStream(fileOut);
+			out.writeObject(this.getClass());
+			out.close();
+			fileOut.close();
+			System.out.printf("Serialized data is saved in /tmp/JavaMedia.ser");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 	}
 
 }
