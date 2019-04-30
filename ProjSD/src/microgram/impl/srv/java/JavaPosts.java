@@ -9,6 +9,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,9 +18,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import discovery.Discovery;
 import microgram.api.Post;
 import microgram.api.java.Posts;
 import microgram.api.java.Result;
+import microgram.impl.clt.rest.RestProfilesClient;
 import utils.Hash;
 
 public class JavaPosts implements Posts {
@@ -105,35 +108,24 @@ public class JavaPosts implements Posts {
 
 	@Override
 	public Result<List<String>> getFeed(String userId) {
-
+		URI[] servers;
 		List<String> l = new ArrayList<String>();
-		FileInputStream fileIn;
 		try {
-			fileIn = new FileInputStream("JavaProfiles.ser");
-			ObjectInputStream in = new ObjectInputStream(fileIn);
-			JavaProfiles jp = (JavaProfiles) in.readObject();
-			Set<String> followers = jp.following.get(userId);
+			servers = Discovery.findUrisOf("Microgram-Profiles", 1);
+			RestProfilesClient c = new RestProfilesClient(servers[0]) {
+			};
 
-			if (followers == null) {
-				in.close();
-				return error(NOT_FOUND);
-			}
-			for (String key : posts.keySet()) {
-				if (followers.contains(key)) {
-					l.add(key);
+			for (String id : userPosts.keySet()) {
+				Result<Boolean> response = c.isFollowing(userId, id);
+				if (response.value()) {
+					for (String postid : userPosts.get(id)) {
+						l.add(postid);
+					}
 				}
 
 			}
-			in.close();
-			return ok(l);
 
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

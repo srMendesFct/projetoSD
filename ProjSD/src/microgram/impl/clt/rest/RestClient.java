@@ -33,12 +33,6 @@ abstract class RestClient extends RetryClient {
 	protected final ClientConfig config;
 
 	public RestClient(URI uri, String path) {
-		try {
-			Discovery.findUrisOf(uri.toString(), 1);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		this.uri = uri;
 		this.config = new ClientConfig();
 		this.client = ClientBuilder.newClient(config);

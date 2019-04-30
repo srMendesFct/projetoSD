@@ -22,7 +22,6 @@ public abstract class RestProfilesClient extends RestClient implements Profiles 
 
 	public RestProfilesClient(URI serverUri) throws IOException {
 		super(serverUri, RestProfiles.PATH);
-		Discovery.findUrisOf(RestProfiles.PATH, 3);
 
 	}
 
