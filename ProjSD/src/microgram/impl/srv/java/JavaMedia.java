@@ -24,7 +24,7 @@ public class JavaMedia extends RestResource implements microgram.api.java.Media,
 		String id = Hash.of(bytes);
 		if (!photos.containsKey(id)) {
 			photos.put(id, bytes);
-			return ok();
+			return ok(id);
 		} else
 			return error(CONFLICT);
 	}
