@@ -32,7 +32,7 @@ public class JavaPosts implements Posts {
 	protected Map<String, Set<String>> userPosts = new HashMap<>();
 
 	@Override
-	public Result<Post> getPost(String postId) {
+	public synchronized Result<Post> getPost(String postId) {
 		Post res = posts.get(postId);
 		if (res != null)
 			return ok(res);
@@ -41,7 +41,7 @@ public class JavaPosts implements Posts {
 	}
 
 	@Override
-	public Result<Void> deletePost(String postId) {
+	public synchronized Result<Void> deletePost(String postId) {
 		Post post = posts.get(postId);
 		if (post != null) {
 			likes.remove(postId);
@@ -53,7 +53,7 @@ public class JavaPosts implements Posts {
 	}
 
 	@Override
-	public Result<String> createPost(Post post) {
+	public synchronized Result<String> createPost(Post post) {
 		String postId = Hash.of(post.getOwnerId(), post.getMediaUrl());
 		if (posts.putIfAbsent(postId, post) == null) {
 
@@ -69,7 +69,7 @@ public class JavaPosts implements Posts {
 	}
 
 	@Override
-	public Result<Void> like(String postId, String userId, boolean isLiked) {
+	public synchronized  Result<Void> like(String postId, String userId, boolean isLiked) {
 
 		Set<String> res = likes.get(postId);
 		if (res == null)
@@ -88,7 +88,7 @@ public class JavaPosts implements Posts {
 	}
 
 	@Override
-	public Result<Boolean> isLiked(String postId, String userId) {
+	public synchronized Result<Boolean> isLiked(String postId, String userId) {
 		Set<String> res = likes.get(postId);
 
 		if (res != null)
@@ -98,7 +98,7 @@ public class JavaPosts implements Posts {
 	}
 
 	@Override
-	public Result<List<String>> getPosts(String userId) {
+	public synchronized Result<List<String>> getPosts(String userId) {
 		Set<String> res = userPosts.get(userId);
 		if (res != null)
 			return ok(new ArrayList<>(res));
@@ -107,7 +107,7 @@ public class JavaPosts implements Posts {
 	}
 
 	@Override
-	public Result<List<String>> getFeed(String userId) {
+	public synchronized Result<List<String>> getFeed(String userId) {
 		URI[] servers;
 		List<String> l = new ArrayList<String>();
 		try {

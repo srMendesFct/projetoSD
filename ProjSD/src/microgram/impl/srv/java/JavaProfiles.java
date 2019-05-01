@@ -34,7 +34,7 @@ public class JavaProfiles extends RestResource implements microgram.api.java.Pro
 	
 
 	@Override
-	public Result<Profile> getProfile(String userId) {
+	public synchronized Result<Profile> getProfile(String userId) {
 		Profile res = users.get(userId);
 		if (res == null)
 			return error(NOT_FOUND);
@@ -45,7 +45,7 @@ public class JavaProfiles extends RestResource implements microgram.api.java.Pro
 	}
 
 	@Override
-	public Result<Void> createProfile(Profile profile) {
+	public synchronized Result<Void> createProfile(Profile profile) {
 		Profile res = users.putIfAbsent(profile.getUserId(), profile);
 		if (res != null)
 			return error(CONFLICT);
@@ -55,7 +55,7 @@ public class JavaProfiles extends RestResource implements microgram.api.java.Pro
 	}
 
 	@Override
-	public Result<Void> deleteProfile(String userId) {
+	public synchronized Result<Void> deleteProfile(String userId) {
 		Profile res = users.get(userId);
 		if(res == null) {
 			return Result.error(ErrorCode.NOT_FOUND);
@@ -84,12 +84,12 @@ public class JavaProfiles extends RestResource implements microgram.api.java.Pro
 	}
 
 	@Override
-	public Result<List<Profile>> search(String prefix) {
+	public synchronized Result<List<Profile>> search(String prefix) {
 		return ok(users.values().stream().filter(p -> p.getUserId().startsWith(prefix)).collect(Collectors.toList()));
 	}
 
 	@Override
-	public Result<Void> follow(String userId1, String userId2, boolean isFollowing) {
+	public synchronized Result<Void> follow(String userId1, String userId2, boolean isFollowing) {
 		Set<String> s1 = following.get(userId1);
 		Set<String> s2 = followers.get(userId2);
 
@@ -109,7 +109,7 @@ public class JavaProfiles extends RestResource implements microgram.api.java.Pro
 	}
 
 	@Override
-	public Result<Boolean> isFollowing(String userId1, String userId2) {
+	public synchronized Result<Boolean> isFollowing(String userId1, String userId2) {
 
 		Set<String> s1 = following.get(userId1);
 		Set<String> s2 = followers.get(userId2);
