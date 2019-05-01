@@ -5,10 +5,14 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
+import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
 /**
@@ -90,44 +94,41 @@ public class Discovery {
 	 *         empty, 0-length, array if the service is not found within the alloted
 	 *         time.
 	 * @throws IOException
-	 *            
+	 *             OLA OLA [OLA , OLA]
 	 */
 	public static URI[] findUrisOf(String serviceName, int minRepliesNeeded) throws IOException {
 
 		Set<URI> replies = new HashSet<URI>();
-		
-		
-		while (replies.size() < minRepliesNeeded) {
-			long deadLine = System.currentTimeMillis() + DISCOVERY_TIMEOUT;
-			
-			try (MulticastSocket socket = new MulticastSocket(DISCOVERY_ADDR.getPort())) {
-				socket.joinGroup(DISCOVERY_ADDR.getAddress());
+		long deadLine = System.currentTimeMillis() + DISCOVERY_TIMEOUT;
 
+		try (MulticastSocket socket = new MulticastSocket(DISCOVERY_ADDR.getPort())) {
+			socket.joinGroup(DISCOVERY_ADDR.getAddress());
+
+			while (replies.size() < minRepliesNeeded) {
 				byte[] data = new byte[65536];
 
 				DatagramPacket pkt = new DatagramPacket(data, data.length);
 				int waitTime = (int) (deadLine - System.currentTimeMillis());
-				if (waitTime <= 0 && replies.size() < minRepliesNeeded ) {
+				if (waitTime <= 0)
 					break;
-					
-				}
-				
 				socket.setSoTimeout(waitTime);
 				socket.receive(pkt);
-				String toCheck = new String(pkt.getData(), pkt.getLength());
+				String toCheck = new String(pkt.getData(), 0, pkt.getLength());
 				String splited[] = toCheck.split(DELIMITER);
 
-				if (splited.length != 2)
-					// error
+				if (splited.length != 2) {
 
-					if (splited[0].equals(serviceName)) {
-						replies.add(URI.create(splited[1]));
-					}
+				}
+				// error
 
-			} catch (SocketTimeoutException e) {
-				System.out.println("timout");
-
+				if (splited[0].equals(serviceName)) {
+					replies.add(URI.create(splited[1]));
+				}
 			}
+
+		} catch (SocketTimeoutException e) {
+			// TIMEOUT EXEPTION
+			System.out.println();
 
 		}
 
