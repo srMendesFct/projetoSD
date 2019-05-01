@@ -17,6 +17,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import discovery.Discovery;
 import microgram.api.Post;
@@ -27,12 +28,12 @@ import utils.Hash;
 
 public class JavaPosts implements Posts {
 
-	protected Map<String, Post> posts = new HashMap<>();
-	protected Map<String, Set<String>> likes = new HashMap<>();
-	protected Map<String, Set<String>> userPosts = new HashMap<>();
+	protected Map<String, Post> posts = new ConcurrentHashMap<>();
+	protected Map<String, Set<String>> likes = new ConcurrentHashMap<>();
+	protected Map<String, Set<String>> userPosts = new ConcurrentHashMap<>();
 
 	@Override
-	public synchronized Result<Post> getPost(String postId) {
+	public Result<Post> getPost(String postId) {
 		Post res = posts.get(postId);
 		if (res != null)
 			return ok(res);
@@ -41,7 +42,7 @@ public class JavaPosts implements Posts {
 	}
 
 	@Override
-	public synchronized Result<Void> deletePost(String postId) {
+	public Result<Void> deletePost(String postId) {
 		Post post = posts.get(postId);
 		if (post != null) {
 			likes.remove(postId);
@@ -53,7 +54,7 @@ public class JavaPosts implements Posts {
 	}
 
 	@Override
-	public synchronized Result<String> createPost(Post post) {
+	public Result<String> createPost(Post post) {
 		String postId = Hash.of(post.getOwnerId(), post.getMediaUrl());
 		if (posts.putIfAbsent(postId, post) == null) {
 
@@ -69,7 +70,7 @@ public class JavaPosts implements Posts {
 	}
 
 	@Override
-	public synchronized  Result<Void> like(String postId, String userId, boolean isLiked) {
+	public Result<Void> like(String postId, String userId, boolean isLiked) {
 
 		Set<String> res = likes.get(postId);
 		if (res == null)
@@ -88,7 +89,7 @@ public class JavaPosts implements Posts {
 	}
 
 	@Override
-	public synchronized Result<Boolean> isLiked(String postId, String userId) {
+	public Result<Boolean> isLiked(String postId, String userId) {
 		Set<String> res = likes.get(postId);
 
 		if (res != null)
@@ -98,7 +99,7 @@ public class JavaPosts implements Posts {
 	}
 
 	@Override
-	public synchronized Result<List<String>> getPosts(String userId) {
+	public Result<List<String>> getPosts(String userId) {
 		Set<String> res = userPosts.get(userId);
 		if (res != null)
 			return ok(new ArrayList<>(res));
@@ -107,7 +108,7 @@ public class JavaPosts implements Posts {
 	}
 
 	@Override
-	public synchronized Result<List<String>> getFeed(String userId) {
+	public Result<List<String>> getFeed(String userId) {
 		URI[] servers;
 		List<String> l = new ArrayList<String>();
 		try {
