@@ -20,8 +20,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import discovery.Discovery;
-import kakfa.KafkaPublisher;
-import kakfa.KafkaUtils;
+
 import microgram.api.Post;
 import microgram.api.java.Posts;
 import microgram.api.java.Result;

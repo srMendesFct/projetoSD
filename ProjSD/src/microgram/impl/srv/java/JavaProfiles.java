@@ -6,7 +6,10 @@ import static microgram.api.java.Result.ErrorCode.CONFLICT;
 import static microgram.api.java.Result.ErrorCode.NOT_FOUND;
 
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -15,6 +18,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import discovery.Discovery;
 import kakfa.KafkaPublisher;
 import kakfa.KafkaSubscriber;
 import kakfa.KafkaSubscriber.SubscriberListener;
@@ -22,6 +26,9 @@ import kakfa.KafkaUtils;
 import microgram.api.Profile;
 import microgram.api.java.Result;
 import microgram.api.java.Result.ErrorCode;
+import microgram.impl.clt.java.RetryPostsClient;
+import microgram.impl.clt.rest.RestPostsClient;
+import microgram.impl.clt.rest.RestProfilesClient;
 import microgram.impl.srv.rest.JavaMedia;
 import microgram.impl.srv.rest.RestResource;
 
@@ -35,19 +42,31 @@ public class JavaProfiles extends RestResource implements microgram.api.java.Pro
 	protected Map<String, Set<String>> followers = new ConcurrentHashMap<>();
 	protected Map<String, Set<String>> following = new ConcurrentHashMap<>();
 	public static final String PROFILE_EVENTS = "Microgram-PostsEvents";
-	
 
-
-	
 	@Override
 	public Result<Profile> getProfile(String userId) {
-	
+
 		Profile res = users.get(userId);
 		if (res == null)
 			return error(NOT_FOUND);
 
 		res.setFollowers(followers.get(userId).size());
 		res.setFollowing(following.get(userId).size());
+
+		URI[] servers;
+		try {
+			servers = Discovery.findUrisOf("Microgram-Posts", 1);
+			RestPostsClient c1 = new RestPostsClient(servers[0]) {
+			};
+			RetryPostsClient c = new RetryPostsClient(c1) {
+			};
+			
+			Result<List<String>> response = c.getPosts(userId);
+			res.setPosts(response.value().size());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return ok(res);
 	}
 
@@ -58,7 +77,7 @@ public class JavaProfiles extends RestResource implements microgram.api.java.Pro
 			return error(CONFLICT);
 		followers.put(profile.getUserId(), new HashSet<>());
 		following.put(profile.getUserId(), new HashSet<>());
-		
+
 		return ok();
 	}
 
@@ -81,12 +100,29 @@ public class JavaProfiles extends RestResource implements microgram.api.java.Pro
 				}
 
 			}
+			
+			URI[] servers;
+			try {
+				servers = Discovery.findUrisOf("Microgram-Posts", 1);
+				RestPostsClient c1 = new RestPostsClient(servers[0]) {
+				};
+				RetryPostsClient c = new RetryPostsClient(c1) {
+				};
+				
+				Result<List<String>> response = c.getPosts(userId);
+				for(String postid : response.value()) {
+					c.deletePost(postid);
+				}
+				res.setPosts(response.value().size());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 
 			users.remove(userId);
 			followers.remove(userId);
 			following.remove(userId);
-			
-			
+
 			return ok();
 		}
 
@@ -114,8 +150,6 @@ public class JavaProfiles extends RestResource implements microgram.api.java.Pro
 			if (!removed1 || !removed2)
 				return error(NOT_FOUND);
 		}
-		
-		
 
 		return ok();
 	}
