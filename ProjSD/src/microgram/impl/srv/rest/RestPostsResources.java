@@ -2,6 +2,8 @@ package microgram.impl.srv.rest;
 
 import java.net.URI;
 import java.util.List;
+
+import kakfa.KafkaPublisher;
 import microgram.api.Post;
 import microgram.api.java.Posts;
 import microgram.api.rest.RestPosts;
@@ -13,7 +15,10 @@ public abstract class RestPostsResources extends RestResource implements RestPos
 	final Posts impl;
 
 	public RestPostsResources(URI serverUri) {
+	
 		this.impl = new JavaPosts();
+		
+		
 	}
 
 	@Override

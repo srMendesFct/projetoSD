@@ -8,7 +8,6 @@ import static microgram.api.java.Result.ErrorCode.NOT_FOUND;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -16,13 +15,14 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import org.glassfish.hk2.api.ErrorType;
-
 import kakfa.KafkaPublisher;
+import kakfa.KafkaSubscriber;
+import kakfa.KafkaSubscriber.SubscriberListener;
 import kakfa.KafkaUtils;
 import microgram.api.Profile;
 import microgram.api.java.Result;
 import microgram.api.java.Result.ErrorCode;
+import microgram.impl.srv.rest.JavaMedia;
 import microgram.impl.srv.rest.RestResource;
 
 public class JavaProfiles extends RestResource implements microgram.api.java.Profiles, java.io.Serializable {
@@ -34,21 +34,14 @@ public class JavaProfiles extends RestResource implements microgram.api.java.Pro
 	protected Map<String, Profile> users = new ConcurrentHashMap<>();
 	protected Map<String, Set<String>> followers = new ConcurrentHashMap<>();
 	protected Map<String, Set<String>> following = new ConcurrentHashMap<>();
-	final KafkaPublisher kafka;
-
 	public static final String PROFILE_EVENTS = "Microgram-PostsEvents";
+	
 
-	enum ProfileEventKeys {
-		FOLLOW, CREATEPROF, DELETEPROF
-	};
 
-	public JavaProfiles() {
-		this.kafka = new KafkaPublisher();
-		KafkaUtils.createTopics(Arrays.asList(PROFILE_EVENTS));
-	}
-
+	
 	@Override
 	public Result<Profile> getProfile(String userId) {
+	
 		Profile res = users.get(userId);
 		if (res == null)
 			return error(NOT_FOUND);
@@ -65,8 +58,7 @@ public class JavaProfiles extends RestResource implements microgram.api.java.Pro
 			return error(CONFLICT);
 		followers.put(profile.getUserId(), new HashSet<>());
 		following.put(profile.getUserId(), new HashSet<>());
-		kafka.publish(PROFILE_EVENTS, ProfileEventKeys.CREATEPROF.name(),profile.getUserId());
-
+		
 		return ok();
 	}
 
@@ -93,7 +85,7 @@ public class JavaProfiles extends RestResource implements microgram.api.java.Pro
 			users.remove(userId);
 			followers.remove(userId);
 			following.remove(userId);
-			kafka.publish(PROFILE_EVENTS, ProfileEventKeys.DELETEPROF.name(), userId);
+			
 			
 			return ok();
 		}
@@ -123,7 +115,7 @@ public class JavaProfiles extends RestResource implements microgram.api.java.Pro
 				return error(NOT_FOUND);
 		}
 		
-		kafka.publish(PROFILE_EVENTS, ProfileEventKeys.DELETEPROF.name(), userId1);
+		
 
 		return ok();
 	}
