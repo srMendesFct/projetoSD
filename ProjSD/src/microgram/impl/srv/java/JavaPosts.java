@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -20,6 +20,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import discovery.Discovery;
+import kakfa.KafkaPublisher;
+import kakfa.KafkaUtils;
 import microgram.api.Post;
 import microgram.api.java.Posts;
 import microgram.api.java.Result;
@@ -31,6 +33,20 @@ public class JavaPosts implements Posts {
 	protected Map<String, Post> posts = new ConcurrentHashMap<>();
 	protected Map<String, Set<String>> likes = new ConcurrentHashMap<>();
 	protected Map<String, Set<String>> userPosts = new ConcurrentHashMap<>();
+
+	public static final String POSTS_EVENTS = "Microgram-PostsEvents";
+
+	enum PostsEventKeys {
+		LIKE, CREATEPOST, DELETEPOST
+	};
+
+	final KafkaPublisher kafka;
+
+	public JavaPosts() {
+		this.kafka = new KafkaPublisher();
+		KafkaUtils.createTopics(Arrays.asList(POSTS_EVENTS));
+
+	}
 
 	@Override
 	public Result<Post> getPost(String postId) {
@@ -48,6 +64,7 @@ public class JavaPosts implements Posts {
 			likes.remove(postId);
 			userPosts.get(post.getOwnerId()).remove(postId);
 			posts.remove(postId);
+			kafka.publish(POSTS_EVENTS, PostsEventKeys.DELETEPOST.name(), postId);
 			return ok();
 		} else
 			return error(NOT_FOUND);
@@ -66,6 +83,8 @@ public class JavaPosts implements Posts {
 
 			posts.add(postId);
 		}
+		kafka.publish(POSTS_EVENTS, PostsEventKeys.CREATEPOST.name(), postId);
+
 		return ok(postId);
 	}
 
@@ -83,8 +102,10 @@ public class JavaPosts implements Posts {
 			if (!res.remove(userId))
 				return error(NOT_FOUND);
 		}
-
+		
 		getPost(postId).value().setLikes(res.size());
+		kafka.publish(POSTS_EVENTS, PostsEventKeys.LIKE.name(), postId);
+
 		return ok();
 	}
 

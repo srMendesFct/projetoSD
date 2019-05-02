@@ -7,6 +7,7 @@ import static microgram.api.java.Result.ErrorCode.NOT_FOUND;
 
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,6 +18,8 @@ import java.util.stream.Collectors;
 
 import org.glassfish.hk2.api.ErrorType;
 
+import kakfa.KafkaPublisher;
+import kakfa.KafkaUtils;
 import microgram.api.Profile;
 import microgram.api.java.Result;
 import microgram.api.java.Result.ErrorCode;
@@ -31,8 +34,18 @@ public class JavaProfiles extends RestResource implements microgram.api.java.Pro
 	protected Map<String, Profile> users = new ConcurrentHashMap<>();
 	protected Map<String, Set<String>> followers = new ConcurrentHashMap<>();
 	protected Map<String, Set<String>> following = new ConcurrentHashMap<>();
-	
-	
+	final KafkaPublisher kafka;
+
+	public static final String PROFILE_EVENTS = "Microgram-PostsEvents";
+
+	enum ProfileEventKeys {
+		FOLLOW, CREATEPROF, DELETEPROF
+	};
+
+	public JavaProfiles() {
+		this.kafka = new KafkaPublisher();
+		KafkaUtils.createTopics(Arrays.asList(PROFILE_EVENTS));
+	}
 
 	@Override
 	public Result<Profile> getProfile(String userId) {
@@ -46,51 +59,54 @@ public class JavaProfiles extends RestResource implements microgram.api.java.Pro
 	}
 
 	@Override
-	public  Result<Void> createProfile(Profile profile) {
+	public Result<Void> createProfile(Profile profile) {
 		Profile res = users.putIfAbsent(profile.getUserId(), profile);
 		if (res != null)
 			return error(CONFLICT);
 		followers.put(profile.getUserId(), new HashSet<>());
 		following.put(profile.getUserId(), new HashSet<>());
+		kafka.publish(PROFILE_EVENTS, ProfileEventKeys.CREATEPROF.name(),profile.getUserId());
+
 		return ok();
 	}
 
 	@Override
-	public  Result<Void> deleteProfile(String userId) {
+	public Result<Void> deleteProfile(String userId) {
 		Profile res = users.get(userId);
-		if(res == null) {
+		if (res == null) {
 			return Result.error(ErrorCode.NOT_FOUND);
-		}else {
-			
-			for(String key : followers.keySet()) {
-					if(followers.get(key).contains(userId)) {
-						followers.get(key).remove(userId);
-					}
+		} else {
+
+			for (String key : followers.keySet()) {
+				if (followers.get(key).contains(userId)) {
+					followers.get(key).remove(userId);
+				}
 			}
-			
-			for(String key : following.keySet()) {
-				if(following.get(key).contains(userId)) {
+
+			for (String key : following.keySet()) {
+				if (following.get(key).contains(userId)) {
 					following.get(key).remove(userId);
 				}
-			
+
 			}
-			
-			
+
 			users.remove(userId);
 			followers.remove(userId);
 			following.remove(userId);
+			kafka.publish(PROFILE_EVENTS, ProfileEventKeys.DELETEPROF.name(), userId);
+			
 			return ok();
 		}
-				
+
 	}
 
 	@Override
-	public  Result<List<Profile>> search(String prefix) {
+	public Result<List<Profile>> search(String prefix) {
 		return ok(users.values().stream().filter(p -> p.getUserId().startsWith(prefix)).collect(Collectors.toList()));
 	}
 
 	@Override
-	public  Result<Void> follow(String userId1, String userId2, boolean isFollowing) {
+	public Result<Void> follow(String userId1, String userId2, boolean isFollowing) {
 		Set<String> s1 = following.get(userId1);
 		Set<String> s2 = followers.get(userId2);
 
@@ -106,11 +122,14 @@ public class JavaProfiles extends RestResource implements microgram.api.java.Pro
 			if (!removed1 || !removed2)
 				return error(NOT_FOUND);
 		}
+		
+		kafka.publish(PROFILE_EVENTS, ProfileEventKeys.DELETEPROF.name(), userId1);
+
 		return ok();
 	}
 
 	@Override
-	public  Result<Boolean> isFollowing(String userId1, String userId2) {
+	public Result<Boolean> isFollowing(String userId1, String userId2) {
 
 		Set<String> s1 = following.get(userId1);
 		Set<String> s2 = followers.get(userId2);
