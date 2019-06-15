@@ -19,17 +19,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import discovery.Discovery;
-import kakfa.KafkaPublisher;
-import kakfa.KafkaSubscriber;
-import kakfa.KafkaSubscriber.SubscriberListener;
-import kakfa.KafkaUtils;
 import microgram.api.Profile;
 import microgram.api.java.Result;
 import microgram.api.java.Result.ErrorCode;
 import microgram.impl.clt.java.RetryPostsClient;
 import microgram.impl.clt.rest.RestPostsClient;
 import microgram.impl.clt.rest.RestProfilesClient;
-import microgram.impl.srv.rest.JavaMedia;
 import microgram.impl.srv.rest.RestResource;
 
 public class JavaProfiles extends RestResource implements microgram.api.java.Profiles, java.io.Serializable {
